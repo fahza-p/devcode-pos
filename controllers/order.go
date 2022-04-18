@@ -4,7 +4,6 @@ import (
 	"devcode-pos/helpers"
 	"devcode-pos/models"
 	"fmt"
-	"math"
 	"sort"
 	"strconv"
 
@@ -21,7 +20,7 @@ func OrderSubTotal(c *fiber.Ctx) error {
 
 	var input []inputProduct
 	var productModel []models.Subtotal
-	var subtotal float64
+	var subtotal float32
 
 	// Parsing Input
 	if err = c.BodyParser(&input); err != nil {
@@ -78,15 +77,16 @@ func OrderSubTotal(c *fiber.Ctx) error {
 			productModel[index].TotalFinalPrice = productModel[index].ProductPrice * float32(productModel[index].Qty)
 		}
 
-		subtotal += math.Round(float64(productModel[index].TotalFinalPrice)*100) / 100
+		subtotal += productModel[index].TotalFinalPrice
 	}
 
+	round, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", subtotal), 64)
 	return c.Status(200).JSON(fiber.Map{
 		"success": true,
 		"message": "Success",
 		"data": map[string]interface{}{
 			"products": productModel,
-			"subtotal": subtotal,
+			"subtotal": round,
 		},
 	})
 }
@@ -95,7 +95,7 @@ func OrderAdd(c *fiber.Ctx) error {
 	var err error
 	var subtotalModel []models.Subtotal
 	var orderModel models.Orders
-	var subtotal float64
+	var subtotal float32
 	var createDetailData []models.OrderDetails
 
 	// Get & Decode Token
@@ -162,7 +162,7 @@ func OrderAdd(c *fiber.Ctx) error {
 			subtotalModel[index].TotalFinalPrice = subtotalModel[index].ProductPrice * float32(subtotalModel[index].Qty)
 		}
 
-		subtotal += math.Round(float64(subtotalModel[index].TotalFinalPrice)*100) / 100
+		subtotal += subtotalModel[index].TotalFinalPrice
 
 		createDetailData = append(createDetailData, models.OrderDetails{
 			DetailProductId:           uint32(subtotalModel[index].ProductId),
@@ -177,13 +177,15 @@ func OrderAdd(c *fiber.Ctx) error {
 	}
 	go models.DB.WithContext(c.Context()).Create(&createDetailData)
 
+	round, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", subtotal), 64)
+
 	createData := &models.Orders{
 		OrderId:          orderModel.OrderId + 1,
 		OrderCashiersId:  1,
 		OrderPaymentId:   input.PaymentId,
-		OrderTotalPrice:  float32(subtotal),
+		OrderTotalPrice:  float32(round),
 		OrderTotalPaid:   input.TotalPaid,
-		OrderTotalReturn: float32(input.TotalPaid) - float32(subtotal),
+		OrderTotalReturn: float32(input.TotalPaid) - float32(round),
 		OrderRecipeId:    fmt.Sprintf("S1%06d", orderModel.OrderId+1),
 	}
 

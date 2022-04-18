@@ -49,4 +49,8 @@ func SetupRoutes(app *fiber.App) {
 	app.Post("/orders", controllers.OrderAdd)
 	app.Get("/orders", controllers.OrderList)
 	app.Get("/orders/:id", controllers.OrderDetail)
+
+	// Report
+	app.Get("/revenues", controllers.Revenues)
+	app.Get("/solds", controllers.Solds)
 }
