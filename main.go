@@ -26,6 +26,11 @@ func main() {
 		DisableStartupMessage: true,
 	})
 
+	// Default middleware config
+	// app.Use(logger.New(logger.Config{
+	// 	Format: "[${time}] | ${status} | ${latency} | ${method} | ${path} | ${reqHeaders}\n",
+	// }))
+
 	router.SetupRoutes(app)
 	app.Listen(":3030")
 }

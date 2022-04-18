@@ -86,8 +86,8 @@ func ProductAdd(c *fiber.Ctx) error {
 		case "BUY_N":
 			discountString = fmt.Sprintf("Buy %d only Rp. %g", input.Discount.Qty, input.Discount.Result)
 		case "PERCENT":
-			finalPrice := input.Price - (input.Price * input.Discount.Result / 100)
-			discountString = fmt.Sprintf("Discount %g%s Rp. %g", input.Discount.Result, "%", finalPrice)
+			finalPrice := fmt.Sprintf("%.2f", input.Price-(input.Price*input.Discount.Result/100))
+			discountString = fmt.Sprintf("Discount %g%s Rp. %s", input.Discount.Result, "%", finalPrice)
 		}
 
 		discountData := &models.Discounts{

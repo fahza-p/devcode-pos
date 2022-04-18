@@ -36,18 +36,6 @@ func Conn() error {
 	}
 	DB = connection
 	migration()
-	// DB.AutoMigrate(
-	// 	&Cashiers{},
-	// 	&Categories{},
-	// 	&Discounts{},
-	// 	&Orders{},
-	// 	&OrderDetails{},
-	// 	&Payments{},
-	// &Products{},
-	// )
-
-	// var users = []Categories{{CashierName: "jinzhu1"}, {CashierName: "jinzhu2"}, {CashierName: "jinzhu3"}}
-	// DB.Create(&users)
 	return nil
 }
 
@@ -117,12 +105,14 @@ func migration() {
 		order_total_price decimal(10,0) DEFAULT NULL,
 		order_total_paid decimal(10,0) DEFAULT NULL,
 		order_total_return decimal(10,0) DEFAULT NULL,
+		order_is_download BOOL DEFAULT 0 NOT NULL,
 		created_at datetime DEFAULT NULL,
 		updated_at datetime DEFAULT NULL,
 		PRIMARY KEY (order_id),
 		KEY idx_orders_order_cashiers_id (order_cashiers_id),
 		KEY idx_orders_order_payment_id (order_payment_id),
-		KEY idx_orders_order_recipe_id (order_recipe_id)
+		KEY idx_orders_order_recipe_id (order_recipe_id),
+		KEY idx_orders_order_is_download (order_is_download)
 	) ENGINE=InnoDB DEFAULT CHARSET=latin1;`
 
 	query += `

@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func OrderSubTotal(c *fiber.Ctx) error {
@@ -99,8 +100,8 @@ func OrderAdd(c *fiber.Ctx) error {
 	var createDetailData []models.OrderDetails
 
 	// Get & Decode Token
-	// getToken := c.Locals("user").(*jwt.Token)
-	// user := getToken.Claims.(jwt.MapClaims)
+	getToken := c.Locals("user").(*jwt.Token)
+	user := getToken.Claims.(jwt.MapClaims)
 
 	type inputProduct struct {
 		ProductId uint16 `json:"productId"`
@@ -181,7 +182,7 @@ func OrderAdd(c *fiber.Ctx) error {
 
 	createData := &models.Orders{
 		OrderId:          orderModel.OrderId + 1,
-		OrderCashiersId:  1,
+		OrderCashiersId:  uint32(user["cashierId"].(float64)),
 		OrderPaymentId:   input.PaymentId,
 		OrderTotalPrice:  float32(round),
 		OrderTotalPaid:   input.TotalPaid,
@@ -225,10 +226,6 @@ func OrderDetail(c *fiber.Ctx) error {
 	id, _ := strconv.ParseUint(c.Params("id"), 10, 32)
 	var model models.Orders
 
-	// type ProductId struct {
-	// 	DetailProductId uint32 `json:"product_id"`
-	// }
-
 	var arrProduct []models.Products
 
 	res := models.DB.WithContext(c.Context()).
@@ -258,6 +255,65 @@ func OrderDetail(c *fiber.Ctx) error {
 		"data": map[string]interface{}{
 			"order":    model,
 			"products": arrProduct,
+		},
+	})
+}
+
+func OrderPdf(c *fiber.Ctx) error {
+	id, _ := strconv.ParseUint(c.Params("id"), 10, 32)
+
+	var model models.Orders
+
+	res := models.DB.WithContext(c.Context()).
+		Where(&models.Orders{OrderId: uint32(id)}).
+		First(&model)
+
+	if res.Error != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"success": false,
+			"message": "Order Not Found",
+			"error":   make(map[string]string),
+		})
+	}
+
+	model.OrderIsDownload = true
+	go models.DB.Save(&model)
+	// pdf := gofpdf.New("P", "mm", "A4", "")
+	// pdf.AddPage()
+	// pdf.SetFont("Arial", "B", 16)
+	// pdf.Text(40, 10, "Hello, world")
+	// // pdf.Image("./sample.png", 56, 40, 100, 0, false, "", 0, "")
+
+	// err := pdf.OutputFileAndClose("./isDownload.pdf")
+	// if err != nil {
+	// 	log.Println("ERROR", err.Error())
+	// }
+
+	return nil
+}
+
+func OrderPdfCheck(c *fiber.Ctx) error {
+	id, _ := strconv.ParseUint(c.Params("id"), 10, 32)
+
+	var model models.Orders
+
+	res := models.DB.WithContext(c.Context()).
+		Where(&models.Orders{OrderId: uint32(id)}).
+		First(&model)
+
+	if res.Error != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"success": false,
+			"message": "Order Not Found",
+			"error":   make(map[string]string),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"success": true,
+		"message": "Success",
+		"data": map[string]interface{}{
+			"isDownload": model.OrderIsDownload,
 		},
 	})
 }

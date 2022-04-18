@@ -12,6 +12,7 @@ type Orders struct {
 	OrderTotalPrice  float32   `gorm:"type:decimal(10,0)" json:"totalPrice"`
 	OrderTotalPaid   float32   `gorm:"type:decimal(10,0)" json:"totalPaid"`
 	OrderTotalReturn float32   `gorm:"type:decimal(10,0)" json:"totalReturn"`
+	OrderIsDownload  bool      `json:"isDownload"`
 	CreatedAt        time.Time `gorm:"type:datetime; autoCreateTime" json:"createdAt"`
 	UpdatedAt        time.Time `gorm:"type:datetime; autoUpdateTime" json:"updatedAt"`
 }

@@ -12,6 +12,7 @@ func Protected() fiber.Handler {
 	return jwtware.New(jwtware.Config{
 		SigningKey:   []byte(os.Getenv("SECRET")),
 		ErrorHandler: jwtError,
+		AuthScheme:   "JWT",
 	})
 }
 
